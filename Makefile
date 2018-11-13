@@ -9,4 +9,4 @@ PORT=COM3
 endif
 
 deploy:
-	$(ARDUINO) --board arduino:avr:pro:cpu=8MHzatmega328 --upload ~/Desktop/Blink/Blink.ino
+	$(ARDUINO) --board arduino:avr:pro:cpu=8MHzatmega328 --upload arduino/Blink/Blink.ino
