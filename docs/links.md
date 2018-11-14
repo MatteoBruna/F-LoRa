@@ -3,6 +3,7 @@ https://www.cooking-hacks.com/documentation/tutorials/open-garden-hydroponics-ir
 http://www.gardenbot.org/about/ 
 
 
-*********software*******
+software
+========
 https://github.com/dconstructing/rfm69
 http://www.kittley.com/2018/04/06/blog-async-rfm69/
