@@ -4,22 +4,29 @@
 #include <RFM69.h>
 #include <SPI.h>
 #include <SPIFlash.h>
+#include <LowPower.h>
 
 #include "includes/config.h"
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
-int TRANSMITPERIOD = 2500; //transmit a packet to gateway so often (in ms)
+int TRANSMITPERIOD = 5000; //transmit a packet to gateway so often (in ms)
 byte sendSize=0;
 boolean requestACK = false;
 
-RFM69 radio;
+#ifdef ENABLE_ATC
+  RFM69_ATC radio;
+#else
+  RFM69 radio;
+#endif
 
 typedef struct {
-  int           nodeId; //store this nodeId
-  unsigned long uptime; //uptime in ms
-  float         temp;   //sensor readings
-  float         relhum;
+  //int           nodeId; //store this nodeId ...it's actually useless because RFM69 class already gets the node's ID
+  bool          motion; //flag if data was sent due to motion or as regular communication
+  int         temp;   //sensor readings. I declare them int --> they will be sent as integers using the *10/10 trick
+  int         relhum;
+  //int       moist; //soil moisture sensor
+  int         battlev; //measure battery level
 } Payload;
 Payload theData;
 long lastPeriod = -1;
@@ -29,7 +36,8 @@ void setup() {
     serial_init();
     led_init();
     dht_init();
-	radio_init();
+	  radio_init();
+ // if (flash.initialize()) flash.sleep(); //if Moteino has FLASH-MEM, make sure it sleeps
 }
 
 void radio_init() {
@@ -37,11 +45,20 @@ void radio_init() {
 #ifdef IS_RFM69HW_HCW
     radio.setHighPower(); //must include this only for RFM69HW/HCW!
 #endif
-    radio.encrypt(KEY);
+    //radio.encrypt(KEY); encryption not used now for simplicity
+
+#ifdef ENABLE_ATC
+  radio.enableAutoPower(ATC_RSSI);
+  DEBUGln("RFM69_ATC Enabled (Auto Transmission Control)\n");
+#endif
 
     char buff[128];
     snprintf(buff, 128, "Transmitting at %d Mhz...", (FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915));
     Serial.println(buff);
+
+//setup interrupt pin for motion sensor to wake up microcontroller
+  pinMode(MOTION_PIN, INPUT);
+  attachInterrupt(MOTION_IRQ, motionIRQ, RISING);
 }
 
 void dht_init() {
@@ -76,12 +93,12 @@ void loop() {
 
     int currPeriod = millis()/TRANSMITPERIOD;   //meglio di "delay()"
     if (currPeriod != lastPeriod) {
-        float temp, relhum;
-        dhtstuff2(&temp, &relhum);
+        int temp, relhum;
+        dhtstuff(&temp, &relhum);
 
         //fill in the struct with new values
-        theData.nodeId = NODEID;
-        theData.uptime = millis();
+        //theData.nodeId = NODEID;
+        //theData.uptime = millis();
         theData.temp = temp; //sensor data
         theData.relhum = relhum;
 
@@ -101,7 +118,7 @@ void loop() {
 }
 
 void led_init() {
-    pinMode(LED, OUTPUT);
+    pinMode(LED, OUTPUT);//once deployed it's not useful...comment out
 }
 
 void led_blink(int DELAY_MS) {
@@ -110,40 +127,38 @@ void led_blink(int DELAY_MS) {
     digitalWrite(LED, LOW);
 }
 
-void dhtstuff() {
-    sensors_event_t event;
-    dht.temperature().getEvent(&event);
-    if (isnan(event.temperature)) {
-        Serial.println("Error reading temperature!");
-    } else {
-        Serial.print("Temperature: ");
-        Serial.print(event.temperature);
-        Serial.println(" *C");
-    }
-    // Get humidity event and print its value.
-    dht.humidity().getEvent(&event);
-    if (isnan(event.relative_humidity)) {
-        Serial.println("Error reading humidity!");
-    } else {
-        Serial.print("Humidity: ");
-        Serial.print(event.relative_humidity);
-        Serial.println("%");
-    }
-}
 
-void dhtstuff2(float* temp, float* relhum) {
-    sensors_event_t event;
-    dht.temperature().getEvent(&event);
-    if (isnan(event.temperature)) {
-        *temp = 999;
-    } else {
-        *temp = event.temperature;
-    }
-    // Get humidity event and print its value.
-    dht.humidity().getEvent(&event);
-    if (isnan(event.relative_humidity)) {
-        *relhum = 999;
-    } else {
-        *relhum = event.relative_humidity;
-    }
-}
+void dhtstuff(int* temp, int* relhum)
+{ 
+
+sensors_event_t event;  
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    *temp = 999;
+  }
+  else {
+    *temp = (int) (event.temperature * 10);
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    *relhum = 999;
+  }
+  else {
+    *relhum = (int) (event.relative_humidity * 10);
+  }
+  
+  return;
+  }
+
+//  void readBattery(int* batlev)
+//{
+//  unsigned int readings=0;
+//
+//  for (byte i=0; i<5; i++) //take several samples, and average
+//    readings+=analogRead(BATT_MONITOR);
+ 
+//  batteryVolts = BATT_FORMULA(readings / 5.0);
+//  dtostrf(batteryVolts,3,2, BATstr); //update the BATStr which gets sent every BATT_CYCLES or along with the MOTION message
+//  if (batteryVolts <= BATT_LOW) BATstr = "LOW";
+//}
