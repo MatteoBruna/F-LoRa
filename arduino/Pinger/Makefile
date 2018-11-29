@@ -1,8 +1,9 @@
 include ../config.mk
 
+SOURCES=Pinger.ino
 
 verify:
-	$(ARDUINO) --board $(BOARD) --verify Pinger.ino
+	$(ARDUINO) --board $(BOARD) --verify $(SOURCES)
 
 upload:
-	$(ARDUINO) --board $(BOARD) --upload Pinger.ino
+	$(ARDUINO) --board $(BOARD) --upload $(SOURCES)
