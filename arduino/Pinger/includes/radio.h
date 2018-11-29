@@ -4,7 +4,7 @@
 #include <RFM69.h>
 
 typedef struct {
-  int           nodeId; //store this nodeId
+  int           node_id; //store this nodeId
   unsigned long uptime; //uptime in ms
   float         temp;   //temperature maybe?
 } Message;
@@ -12,6 +12,6 @@ typedef struct {
 
 void radio_init(RFM69 &rad, int frequency, int node_id, int network_id);
 void radio_receive(RFM69 &radio);
-void radio_send(RFM69 &radio, int gateway_id, Message &message);
+void radio_send(RFM69 &radio, int dest_node_id, Message &message);
 
 #endif

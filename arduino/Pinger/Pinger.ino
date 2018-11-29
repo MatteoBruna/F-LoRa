@@ -24,7 +24,7 @@ void setup() {
 void loop() {
     int transmit_period = 300; //transmit a packet to gateway so often (in ms)
     Message message;
-    message.nodeId = NODEID;
+    message.node_id = NODEID;
     message.uptime = millis();
     message.temp = 91.23; //it's hot!
     //fill in the struct with new values

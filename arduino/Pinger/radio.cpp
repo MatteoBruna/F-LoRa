@@ -33,11 +33,11 @@ void radio_receive(RFM69 &radio) {
     }
 }
 
-void radio_send(RFM69 &radio, int gateway_id, Message &message) {
+void radio_send(RFM69 &radio, int dest_node_id, Message &message) {
     Serial.print("Sending struct (");
     Serial.print(sizeof(message));
     Serial.print(" bytes) ... ");
-    if (radio.sendWithRetry(gateway_id, (const void*)(&message), sizeof(message))) {
+    if (radio.sendWithRetry(dest_node_id, (const void*)(&message), sizeof(message))) {
         Serial.print(" ok!");
     }
     else {
