@@ -39,8 +39,7 @@ void radio_send(RFM69 &radio, int dest_node_id, Message &message) {
     Serial.print(" bytes) ... ");
     if (radio.sendWithRetry(dest_node_id, (const void*)(&message), sizeof(message))) {
         Serial.print(" ok!");
-    }
-    else {
+    } else {
         Serial.print(" nothing...");
     }
     Serial.println();
