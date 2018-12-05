@@ -1,65 +1,40 @@
-#include <Adafruit_Sensor.h>
 #include <RFM69.h>
-#include <SPI.h>
-#include <SPIFlash.h>
 
 #include "includes/config.h"
+#include "includes/blink.h"
+#include "includes/radio.h"
 
-int TRANSMITPERIOD = 2500; //transmit a packet to gateway so often (in ms)
-byte sendSize=0;
-boolean requestACK = false;
+static RFM69 radio;
+static long lastPeriod = -1;
 
-RFM69 radio;
-
-typedef struct {
-  int           node_id; 
-} Message;
-Message message;
-
-long lastPeriod = -1;
+void serial_init(long baud) {
+    Serial.begin(baud);
+}
 
 void setup() {
-    serial_init();
-    led_init();
-	radio_init();
+    serial_init(SERIAL_BAUD);
+    radio_init(radio, FREQUENCY, NODEID, NETWORKID);
+
+    char buff[50];
+    sprintf(buff, "\nTransmitting at %d Mhz...", FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
+    Serial.println(buff);
 }
 
-void radio_init() {
-    radio.initialize(FREQUENCY, NODEID, NETWORKID);
-}
-
-void serial_init() {
-  	Serial.begin(SERIAL_BAUD);
-}
 
 void loop() {
-    int currPeriod = millis()/TRANSMITPERIOD;   //meglio di "delay()"
-    if (currPeriod != lastPeriod) {
-        //fill in the struct with new values
-        message.node_id = NODEID;
+    int transmit_period = 300; //transmit a packet to gateway so often (in ms)
+    Message message;
+    message.node_id = NODEID;
+    message.uptime = millis();
+    message.temp = 91.23; //it's hot!
+    //fill in the struct with new values
 
-        Serial.print("Sending struct (");
-        Serial.print(sizeof(message));
-        Serial.print(" bytes) ... ");
-        if (radio.sendWithRetry(GATEWAYID, (const void*)(&message), sizeof(message))) {
-            Serial.print(" ok!");
-        }
-        else {
-            Serial.print(" nothing...");
-        }
-        Serial.println();
-        led_blink(3);
+    radio_receive(radio);
+    int currPeriod = millis()/transmit_period;
+    if (currPeriod != lastPeriod) {
+        radio_send(radio, GATEWAYID, message);
+        blink(3);
         lastPeriod=currPeriod;
     }
-}
-
-void led_init() {
-    pinMode(LED, OUTPUT);
-}
-
-void led_blink(int DELAY_MS) {
-    digitalWrite(LED, HIGH);
-    delay(DELAY_MS);
-    digitalWrite(LED, LOW);
 }
 
