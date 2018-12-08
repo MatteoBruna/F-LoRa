@@ -28,7 +28,7 @@ void radio_receive(RFM69 &radio) {
             Serial.print(" - ACK sent");
             delay(10);
         }
-        blink(5);
+        blink(100);
         Serial.println();
     }
 }
