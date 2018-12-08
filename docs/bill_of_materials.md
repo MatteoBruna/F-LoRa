@@ -11,4 +11,4 @@ Remote unit
     hard to find. We should consider migrating to a more established module. It also has pitch 2mm, requiring a pitch changer.
 - 2x Pitch changer 2mm to 2.54 mm.
 - [1x SparkFun Beefy 3 - FTDI Basic Breakout](https://shop.pimoroni.com/products/sparkfun-beefy-3-ftdi-basic-breakout)
-
+- [ST-00081 simplytronics PIR sensor](http://simplytronics.com/products/ST-00081)
