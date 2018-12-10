@@ -25,7 +25,7 @@ boolean requestACK = false;
 
 unsigned long MLO=0; // MotionLastObserved (ago, in ms)
 unsigned long now = 0;
-unsigned long time = 0
+unsigned long time = 0;
 unsigned long lastSend = 0;
 unsigned int batterylevel = 0;
 unsigned int temp;
