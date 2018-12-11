@@ -1,3 +1,4 @@
+//////////////////////////////
 // **RADIO Settings **
 
 #define NODEID      2
@@ -23,6 +24,7 @@
 #define ENABLE_ATC
 #define ATC_RSSI      -75
 
+//////////////////////////////
 // ** Moisture sensor settings **
 
 // pin to feed DHT sensor
@@ -36,6 +38,7 @@
 // analog pin to measure soil moisture
 #define MOISTPIN       A1
 
+//////////////////////////////
 // ** Motion sensor settings **
 #define MOTION_PIN     3
 // hardware interrupt 1 (D3) - where motion sensors OUTput is connected, this will generate an interrupt every time there is MOTION
@@ -43,13 +46,16 @@
 // avoid duplicates in 30second intervals (ie mailman sometimes spends 30+ seconds at mailbox)
 #define DUPLICATE_INTERVAL 20000
 
+//////////////////////////////
 // ** Battery monitor settings **
+
 // Sense VBAT_COND signal
 #define BATT_MONITOR  A0
 
 // ** OnBoard LED settings **
 #define LED         9
 
+//////////////////////////////
 // ** Serial Settings **
 // comment this out when deploying to an installed Node to save a few KB of sketch size
 #define SERIAL_EN
