@@ -8,6 +8,7 @@
 #include <LowPower.h>
 
 #include "includes/config.h"
+#include "includes/debug.h"
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
@@ -30,7 +31,7 @@ unsigned long lastSend = 0;
 unsigned int batterylevel = 0;
 unsigned int temp;
 unsigned int relhum; // global variables for DHT22 measured values
-unsigned int soilmoisture; 
+unsigned int soilmoisture;
 
 void setup() {
   // Initialize devices
@@ -41,7 +42,7 @@ void setup() {
   // if (flash.initialize()) flash.sleep(); //if Moteino has FLASH-MEM, make sure it sleeps
 
   radio.sleep();
-  
+
   pinMode(BATT_MONITOR, INPUT);
   pinMode(FEEDDHT, OUTPUT);
   pinMode(FEEDMOIST, OUTPUT);
@@ -108,16 +109,16 @@ void loop() {
   if (sendLoops >= SENDEVERYXLOOPS) {
     dhtmeas(); //read the sensors
     soilmoist();
-    
+
     sendLoops=0;
     char periodO='X';
     unsigned long lastOpened = (time - MLO) / 1000; // get seconds
-    
+
     if (lastOpened <= 59) { periodO = 's'; } // 1-59 seconds
     else if (lastOpened <= 3599) { periodO = 'm'; lastOpened/=60; } // 1-59 minutes
     else if (lastOpened <= 259199) { periodO = 'h'; lastOpened/=3600; } // 1-71 hours
     else if (lastOpened >= 259200) { periodO = 'd'; lastOpened/=86400; } // >=3 days
-   
+
     DEBUG("lastOpened: ");
     DEBUGln(lastOpened);
     DEBUG("periodO: ");
@@ -130,12 +131,12 @@ void loop() {
     DEBUGln(relhum);
     DEBUG("soilmoisture: ");
     DEBUGln(soilmoisture);
-            
+
     sprintf(sendBuf, "%ld,%c,%d,%d,%d,%d", lastOpened, periodO, batterylevel, temp, relhum, soilmoisture); //es: 56,m,48,15,69,96
     sendLen = strlen(sendBuf);
     radio.send(GATEWAYID, sendBuf, sendLen);
     radio.sleep();
-    DEBUG(sendBuf); DEBUG(" ("); DEBUG(sendLen); DEBUGln(")"); 
+    DEBUG(sendBuf); DEBUG(" ("); DEBUG(sendLen); DEBUGln(")");
     lastSend = time;
 
 #ifdef BLINK_EN
@@ -143,7 +144,7 @@ void loop() {
 #endif
 
   }
-  
+
   // do NOT move this after the SLEEP line below or motion will never be detected
   motionDetected=false;
   // correct millis() resonator drift, may need to be tweaked to be accurate
@@ -166,7 +167,7 @@ void Blink(int DELAY_MS) {
 
 
 void dhtmeas()
-{ 
+{
   // variable for repeating the measurements if necessary
   unsigned int n = 0;
   // feed the sensor from OUTPUT pin
@@ -185,7 +186,7 @@ void dhtmeas()
        temp = 999;
     }
   }
-  
+
   // Get humidity event and print its value.
   for (byte i=0; i<3; i++) {
     dht.humidity().getEvent(&event);
