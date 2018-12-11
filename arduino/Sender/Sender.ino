@@ -40,15 +40,8 @@ void setup() {
   dht_init();
   radio_init();
   // if (flash.initialize()) flash.sleep(); //if Moteino has FLASH-MEM, make sure it sleeps
-
-
-  pinMode(BATT_MONITOR, INPUT);
-  pinMode(FEEDDHT, OUTPUT);
-  pinMode(FEEDMOIST, OUTPUT);
-  //setup interrupt pin for motion sensor to wake up microcontroller
-  pinMode(MOTION_PIN, INPUT);
-  //attachInterrupt(MOTION_IRQ, motionIRQ, RISING);
-
+  battery_init();
+  motion_init();
 }
 
 void loop() {
@@ -56,7 +49,7 @@ void loop() {
   // movimento ogni volta che lo registra. Quando registra il movimento
   // non deve leggere i sensori, cosi' risparmio energia
   now = millis();
-  readBattery();
+  battery_level();
 
   if (motionDetected && (time-motionLastObserved > DUPLICATE_INTERVAL)) {
     DEBUG("MOTION");
@@ -65,9 +58,7 @@ void loop() {
     sendLen = strlen(sendBuf); DEBUGln(sendBuf);
     if (radio.sendWithRetry(GATEWAYID, sendBuf, sendLen)) {
       DEBUGln("..OK");
-#ifdef BLINK_EN
-      led_blink(LED,3);
-#endif
+      led_blink(3);
     } else {
       DEBUGln("..NOK");
     }
@@ -107,12 +98,15 @@ void loop() {
     sendLen = strlen(sendBuf);
     radio.send(GATEWAYID, sendBuf, sendLen);
     radio.sleep();
-    DEBUG(sendBuf); DEBUG(" ("); DEBUG(sendLen); DEBUGln(")");
+
+    DEBUG(sendBuf); 
+    DEBUG(" ("); 
+    DEBUG(sendLen); 
+    DEBUGln(")");
+
     lastSend = time;
 
-#ifdef BLINK_EN
     led_blink(3);
-#endif
 
   }
 
@@ -123,11 +117,6 @@ void loop() {
   // LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
   delay(5000);
   DEBUGln("WAKEUP");
-}
-
-void motionIRQ() {
-  motionDetected=true;
-  DEBUGln("IRQ");
 }
 
 //////// Radio functions //////
@@ -149,7 +138,9 @@ void radio_init() {
 ///////// dht functions /////
 
 void dht_init() {
-	dht.begin();
+  dht.begin();
+  pinMode(FEEDDHT, OUTPUT);
+  pinMode(FEEDMOIST, OUTPUT);
 }
 
 void dht_meas() {
@@ -215,19 +206,26 @@ void serial_init() {
 //////// LED functions /////
 
 void led_init() {
+#ifdef BLINK_EN
     // once deployed it's not useful...comment out
     pinMode(LED, OUTPUT);
+#endif
 }
 
 void led_blink(int DELAY_MS) {
+#ifdef BLINK_EN
     digitalWrite(LED, HIGH);
     delay(DELAY_MS);
     digitalWrite(LED, LOW);
+#endif
 }
 
 //////// Battery functions /////////
+void battery_init() {
+  pinMode(BATT_MONITOR, INPUT);
+}
 
-void readBattery() {
+void battery_level() {
   unsigned int readings = 0;
 
   for (byte i = 0; i < 5; i++) {
@@ -236,5 +234,19 @@ void readBattery() {
   }
 
   batterylevel = (int) ((readings / 5.0)*16.4)-906;
+}
+
+////////// motion sensor functions ////////////
+
+void motion_init() {
+  pinMode(MOTION_PIN, INPUT);
+
+  //setup interrupt pin for motion sensor to wake up microcontroller
+  attachInterrupt(MOTION_IRQ, motion_detectISR, RISING);
+}
+
+void motion_detectISR() {
+  motionDetected=true;
+  DEBUGln("IRQ");
 }
 
