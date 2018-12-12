@@ -14,7 +14,6 @@
 #define IS_RFM69HW_HCW  true
 // each loop sleeps 8 seconds, so send status message every this many sleep cycles (default "4" = 32 seconds)
 #define SENDEVERYXLOOPS   4
-//#define BLINK_EN         //uncomment to make LED flash when messages are sent, leave out if you want low power
 
 //ATC = Auto Transmission Control - dials down transmit power to save battery (-100 is the noise floor, -90 is still pretty good)
 //For indoor nodes that are pretty static and at pretty stable temperatures (like a MotionMote) -90dBm is quite safe
@@ -51,9 +50,6 @@
 
 // Sense VBAT_COND signal
 #define BATT_MONITOR  A0
-
-// ** OnBoard LED settings **
-#define LED         9
 
 //////////////////////////////
 // ** Serial Settings **
