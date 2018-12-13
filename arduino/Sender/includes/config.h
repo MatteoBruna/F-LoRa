@@ -33,6 +33,11 @@
 #define DHTPIN         4
 // DHT 22 (AM2302) or DHT11 or DHT21
 #define DHTTYPE        DHT22
+
+
+//////////////////////////////
+// ** Soil moisture sensor settings **
+
 // pin to feed soil moisture sensor
 #define FEEDMOIST      6
 // analog pin to measure soil moisture
