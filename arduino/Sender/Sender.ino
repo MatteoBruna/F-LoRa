@@ -19,7 +19,7 @@ RFM69 radio;
 #endif
 
 volatile boolean motionDetected=false;
-char sendBuf[61];
+char sendBuf[61]; //why 61?
 byte sendLen;
 byte sendLoops=0;
 boolean requestACK = false;
@@ -36,12 +36,12 @@ unsigned int soilmoisture;
 void setup() {
   // Initialize devices
   serial_init();
-  led_init();
-  dht_init();
   radio_init();
   // if (flash.initialize()) flash.sleep(); //if Moteino has FLASH-MEM, make sure it sleeps
   battery_init();
   motion_init();
+  pinMode(FEEDMOIST, OUTPUT);
+  pinMode(FEEDDHT, OUTPUT);
 }
 
 void loop() {
@@ -58,7 +58,6 @@ void loop() {
     sendLen = strlen(sendBuf); DEBUGln(sendBuf);
     if (radio.sendWithRetry(GATEWAYID, sendBuf, sendLen)) {
       DEBUGln("..OK");
-      led_blink(3);
     } else {
       DEBUGln("..NOK");
     }
@@ -70,7 +69,7 @@ void loop() {
   //send sensor readings every SENDEVERYXLOOPS
   if (sendLoops >= SENDEVERYXLOOPS) {
     dht_meas(); //read the sensors
-    dht_soilMoisture();
+    soilMoisture();
 
     sendLoops=0;
     char periodO='X';
@@ -80,19 +79,6 @@ void loop() {
     else if (lastOpened <= 3599) { periodO = 'm'; lastOpened/=60; } // 1-59 minutes
     else if (lastOpened <= 259199) { periodO = 'h'; lastOpened/=3600; } // 1-71 hours
     else if (lastOpened >= 259200) { periodO = 'd'; lastOpened/=86400; } // >=3 days
-
-    DEBUG("lastOpened: ");
-    DEBUGln(lastOpened);
-    DEBUG("periodO: ");
-    DEBUGln(periodO);
-    DEBUG("batterylevel: ");
-    DEBUGln(batterylevel);
-    DEBUG("temp: ");
-    DEBUGln(temp);
-    DEBUG("relhum: ");
-    DEBUGln(relhum);
-    DEBUG("soilmoisture: ");
-    DEBUGln(soilmoisture);
 
     sprintf(sendBuf, "%ld,%c,%d,%d,%d,%d", lastOpened, periodO, batterylevel, temp, relhum, soilmoisture); //es: 56,m,48,15,69,96
     sendLen = strlen(sendBuf);
@@ -105,17 +91,13 @@ void loop() {
     DEBUGln(")");
 
     lastSend = time;
-
-    led_blink(3);
-
   }
 
   // do NOT move this after the SLEEP line below or motion will never be detected
   motionDetected=false;
   // correct millis() resonator drift, may need to be tweaked to be accurate
   time = time + 8000 + millis()-now + 480;
-  // LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
-  delay(5000);
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
   DEBUGln("WAKEUP");
 }
 
@@ -137,13 +119,9 @@ void radio_init() {
 
 ///////// dht functions /////
 
-void dht_init() {
-  dht.begin();
-  pinMode(FEEDDHT, OUTPUT);
-  pinMode(FEEDMOIST, OUTPUT);
-}
 
 void dht_meas() {
+  dht.begin();
   // variable for repeating the measurements if necessary
   unsigned int n = 0;
   // feed the sensor from OUTPUT pin
@@ -176,11 +154,13 @@ void dht_meas() {
 
   }
 
-  // switch off sensor
-  digitalWrite(FEEDDHT, LOW);
+ digitalWrite(FEEDDHT, LOW); //switch off sensor
+ pinMode(DHTPIN, OUTPUT);
+ digitalWrite(DHTPIN, LOW); //switch off sensor reading pin: need to do this otherwise sensor will consume severa microamps even if not fed
+  
 }
 
-void dht_soilMoisture() {
+void soilMoisture() {
   // feed the sensor
   digitalWrite(FEEDMOIST, HIGH);
   unsigned int readings=0;
@@ -203,22 +183,6 @@ void serial_init() {
 #endif
 }
 
-//////// LED functions /////
-
-void led_init() {
-#ifdef BLINK_EN
-    // once deployed it's not useful...comment out
-    pinMode(LED, OUTPUT);
-#endif
-}
-
-void led_blink(int DELAY_MS) {
-#ifdef BLINK_EN
-    digitalWrite(LED, HIGH);
-    delay(DELAY_MS);
-    digitalWrite(LED, LOW);
-#endif
-}
 
 //////// Battery functions /////////
 void battery_init() {
@@ -249,4 +213,3 @@ void motion_detectISR() {
   motionDetected=true;
   DEBUGln("IRQ");
 }
-

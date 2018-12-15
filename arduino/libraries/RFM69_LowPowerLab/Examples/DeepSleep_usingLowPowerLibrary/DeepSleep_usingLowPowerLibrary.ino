@@ -3,7 +3,7 @@
 // Everything is put to sleep including the MCU, the radio (if any) and the FlashMem chip
 //**** SETTINGS *********************************************************************************************
 #define WITH_RFM69              //comment this line out if you don't have a RFM69 on your Moteino
-#define WITH_SPIFLASH           //comment this line out if you don't have the FLASH-MEM chip on your Moteino
+//#define WITH_SPIFLASH           //comment this line out if you don't have the FLASH-MEM chip on your Moteino
 //***********************************************************************************************************
 
 #include <LowPower.h> //get library from: https://github.com/lowpowerlab/lowpower
@@ -39,17 +39,17 @@ void setup () {
     flash.sleep();
 #endif
 
-  for (uint8_t i=0; i<=A5; i++)
-  {
-#ifdef WITH_RFM69
-    if (i == RF69_SPI_CS) continue;
-#endif
-#ifdef WITH_SPIFLASH
-    if (i == FLASH_SS) continue;
-#endif
-    pinMode(i, OUTPUT);
-    digitalWrite(i, LOW);
-  }
+//  for (uint8_t i=0; i<=A5; i++)
+//  {
+//#ifdef WITH_RFM69
+//    if (i == RF69_SPI_CS) continue;
+//#endif
+//#ifdef WITH_SPIFLASH
+//    if (i == FLASH_SS) continue;
+//#endif
+//    pinMode(i, OUTPUT);
+//    digitalWrite(i, LOW);
+//  }
 }
 
 void loop () 
@@ -57,7 +57,7 @@ void loop ()
   //optional blink to know radio/flash sleeping went OK
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
-  delay(30);
+  delay(500);
   digitalWrite(LED, LOW);
 
   //sleep MCU for 8seconds
