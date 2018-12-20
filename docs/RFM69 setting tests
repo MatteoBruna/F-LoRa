@@ -1,0 +1,44 @@
+----------
+Lessons learnt from range & RSSI tests
+----------
+
+Best settings so far:
+bitrate standard 55555
+FDEV 50000
+
+
+with bitrate 1200 and FDEV 20000 reception is worse
+
+Enabling the preamplifier (Set reg 0x58 to 0x2D) actually reduces the signal of 2db...
+
+running a rcCalibration helps a little...
+
+my dipole antenna is much better than the commercial one
+
+all standard: + FDEV 20000; 100000, 2000(40 ogni tanto)
+risultato: -41
+
+bitrate: 38400
+FDEV: 50000
+risultato: -40
+
+bitrate: 38400
+FDEV: 2000
+risultato: no connection
+
+bitrate: 1200
+FDEV: 50000
+risultato: -42
+
+bitrate: 9600
+FDEV: 50000
+risultato: -42
+
+bitrate: 115200
+FDEV: 50000
+risultato: -44
+
+see:
+https://ukhas.net/wiki/ideas:rfm69_frequency_trimming
+consider getting an SDR dongle
+https://lowpowerlab.com/forum/rf-range-antennas-rfm69-library/long-range-parameters-for-rfm69hw-(868-915-mhz)/
