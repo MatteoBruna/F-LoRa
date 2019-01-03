@@ -5,19 +5,19 @@
 // **********************************************************************************
 // License
 // **********************************************************************************
-// This program is free software; you can redistribute it 
-// and/or modify it under the terms of the GNU General    
-// Public License as published by the Free Software       
-// Foundation; either version 3 of the License, or        
-// (at your option) any later version.                    
-//                                                        
-// This program is distributed in the hope that it will   
-// be useful, but WITHOUT ANY WARRANTY; without even the  
-// implied warranty of MERCHANTABILITY or FITNESS FOR A   
-// PARTICULAR PURPOSE. See the GNU General Public        
-// License for more details.                              
-//                                                        
-// Licence can be viewed at                               
+// This program is free software; you can redistribute it
+// and/or modify it under the terms of the GNU General
+// Public License as published by the Free Software
+// Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A
+// PARTICULAR PURPOSE. See the GNU General Public
+// License for more details.
+//
+// Licence can be viewed at
 // http://www.gnu.org/licenses/gpl-3.0.txt
 //
 // Please maintain this license information along with authorship
@@ -27,6 +27,7 @@
 #define RFM69_h
 #include <Arduino.h>            // assumes Arduino IDE v1.0 or greater
 #include <SPI.h>
+#include <RFM69registers.h>
 
 //////////////////////////////////////////////////////////////////////
 //Platform and digitalPinToInterrupt definitions credit to RadioHead//
@@ -64,7 +65,7 @@
 #elif defined(__APPLE__) // OSX
   #define RF69_PLATFORM RF69_PLATFORM_UNIX
  #else
-  #error Platform not defined! 	
+  #error Platform not defined!
  #endif
 #endif
 
@@ -79,7 +80,7 @@
    // Arduino Mega, Mega ADK, Mega Pro
    // 2->0, 3->1, 21->2, 20->3, 19->4, 18->5
    #define digitalPinToInterrupt(p) ((p) == 2 ? 0 : ((p) == 3 ? 1 : ((p) >= 18 && (p) <= 21 ? 23 - (p) : NOT_AN_INTERRUPT)))
-  #elif defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) 
+  #elif defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__)
    // Arduino 1284 and 1284P - See Maniacbug and Optiboot
    // 10->0, 11->1, 2->2
    #define digitalPinToInterrupt(p) ((p) == 10 ? 0 : ((p) == 11 ? 1 : ((p) == 2 ? 2 : NOT_AN_INTERRUPT)))
@@ -177,7 +178,7 @@ class RFM69 {
 
     RFM69(uint8_t slaveSelectPin=RF69_SPI_CS, uint8_t interruptPin=RF69_IRQ_PIN, bool isRFM69HW=false);
 
-    bool initialize(uint8_t freqBand, uint8_t ID, uint8_t networkID=1);
+    bool initialize(uint8_t freqBand, uint8_t ID, uint8_t networkID=1, uint8_t bitRateMsb=RF_BITRATEMSB_55555, uint8_t bitRateLsb=RF_BITRATELSB_55555);
     void setAddress(uint8_t addr);
     void setNetwork(uint8_t networkID);
     bool canSend();
@@ -234,17 +235,17 @@ class RFM69 {
 
 #if defined(RF69_LISTENMODE_ENABLE)
   //=============================================================================
-  //                     ListenMode specific declarations  
+  //                     ListenMode specific declarations
   //=============================================================================
   public:
     // When we receive a packet in listen mode, this is the time left in the sender's burst.
     // You need to wait at least this long before trying to reply.
     static volatile uint16_t RF69_LISTEN_BURST_REMAINING_MS;
-    
+
     void listenModeStart(void);
     void listenModeEnd(void);
     void listenModeHighSpeed(bool highSpeed) { _isHighSpeed = highSpeed; }
-    
+
     // rx and idle duration in microseconds
     bool listenModeSetDurations(uint32_t& rxDuration, uint32_t& idleDuration);
 
